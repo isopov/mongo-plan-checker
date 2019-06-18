@@ -3,4 +3,4 @@
 WIP
 # Building
 * Ensure docker is installed and available for current user
-* `./mvnw clean verify`
+* `./mvnw clean verify -Pdev`
