@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.isopov.mongo-plan-checker</groupId>
@@ -185,13 +186,26 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <DependencyConvergence />
+                                <DependencyConvergence/>
                                 <requireJavaVersion>
                                     <version>1.8.0</version>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>3.5.0</version>
                                 </requireMavenVersion>
+                                <requireSameVersions>
+                                    <dependencies>
+                                        <dependency>org.mongodb:bson</dependency>
+                                        <dependency>org.mongodb:mongodb-driver-core</dependency>
+                                        <dependency>org.mongodb:mongodb-driver-sync</dependency>
+                                        <dependency>org.mongodb:mongodb-driver-async</dependency>
+                                    </dependencies>
+                                </requireSameVersions>
+                                <requirePluginVersions>
+                                    <banLatest>true</banLatest>
+                                    <banRelease>true</banRelease>
+                                    <banSnapshots>true</banSnapshots>
+                                </requirePluginVersions>
                             </rules>
                             <fail>true</fail>
                         </configuration>
@@ -245,6 +259,30 @@
                         <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                         <fork>false</fork>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>2.5</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.3</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
                 </plugin>
             </plugins>
         </pluginManagement>
