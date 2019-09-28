@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.reactivestreams.data;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.github.isopov.mongoplanchecker.reactivestreams.PlanCheckerMongoDatabase;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.reactivestreams.client.ClientSession;
@@ -12,19 +13,22 @@ import reactor.core.publisher.Mono;
 
 public class PlanCheckerReactiveMongoDatabaseFactory implements ReactiveMongoDatabaseFactory {
   private final ReactiveMongoDatabaseFactory f;
+  private final PlanChecker checker;
 
-  public PlanCheckerReactiveMongoDatabaseFactory(ReactiveMongoDatabaseFactory f) {
+  public PlanCheckerReactiveMongoDatabaseFactory(
+      ReactiveMongoDatabaseFactory f, PlanChecker checker) {
     this.f = f;
+    this.checker = checker;
   }
 
   @Override
   public MongoDatabase getMongoDatabase() throws DataAccessException {
-    return new PlanCheckerMongoDatabase(f.getMongoDatabase());
+    return new PlanCheckerMongoDatabase(f.getMongoDatabase(), checker);
   }
 
   @Override
   public MongoDatabase getMongoDatabase(String dbName) throws DataAccessException {
-    return new PlanCheckerMongoDatabase(f.getMongoDatabase(dbName));
+    return new PlanCheckerMongoDatabase(f.getMongoDatabase(dbName), checker);
   }
 
   @Override
@@ -44,6 +48,6 @@ public class PlanCheckerReactiveMongoDatabaseFactory implements ReactiveMongoDat
 
   @Override
   public PlanCheckerReactiveMongoDatabaseFactory withSession(ClientSession session) {
-    return new PlanCheckerReactiveMongoDatabaseFactory(f.withSession(session));
+    return new PlanCheckerReactiveMongoDatabaseFactory(f.withSession(session), checker);
   }
 }

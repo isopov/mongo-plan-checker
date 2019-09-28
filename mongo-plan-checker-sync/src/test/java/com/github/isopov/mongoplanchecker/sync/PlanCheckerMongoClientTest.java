@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.isopov.mongoplanchecker.core.BadPlanException;
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.github.isopov.mongoplanchecker.core.Violations;
 import com.github.isopov.mongoplanchecker.testutil.AbstractMongoTest;
 import com.mongodb.MongoClientSettings;
@@ -35,7 +36,8 @@ class PlanCheckerMongoClientTest extends AbstractMongoTest {
                                     new ServerAddress(
                                         MONGO.getContainerIpAddress(),
                                         MONGO.getMappedPort(MONGO_PORT)))))
-                    .build()));
+                    .build()),
+            new PlanChecker());
     collection = mongoClient.getDatabase("test").getCollection("testSync");
     collection.insertMany(
         IntStream.range(0, 1_000)

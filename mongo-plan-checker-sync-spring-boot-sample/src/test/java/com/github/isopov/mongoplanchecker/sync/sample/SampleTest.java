@@ -1,9 +1,9 @@
 package com.github.isopov.mongoplanchecker.sync.sample;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.isopov.mongoplanchecker.core.BadPlanException;
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class SampleTest {
 
   @Autowired private PlayerRepository repository;
+  @Autowired private PlanChecker checker;
 
   @BeforeEach
   void setup() {
@@ -36,12 +37,19 @@ class SampleTest {
   }
 
   @Test
+  void testCountByNameWithIgnore() {
+    checker.ignoreCollscan();
+    assertEquals(10, repository.countByName("Name5"));
+  }
+
+  @Test
   void testCountByHouse() {
     assertEquals(10, repository.countByHouse("House7"));
   }
 
   @AfterEach
   void testDown() {
+    assertFalse(checker.anyIgnores());
     // Have you ever run your tests against production DB?
     repository.deleteAll();
   }

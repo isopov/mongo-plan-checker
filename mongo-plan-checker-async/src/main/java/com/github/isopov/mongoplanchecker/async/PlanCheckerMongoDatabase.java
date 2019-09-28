@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.async;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
@@ -15,9 +16,11 @@ import org.bson.conversions.Bson;
 @SuppressWarnings("deprecation")
 public class PlanCheckerMongoDatabase implements MongoDatabase {
   private final MongoDatabase db;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoDatabase(MongoDatabase db) {
+  public PlanCheckerMongoDatabase(MongoDatabase db, PlanChecker checker) {
     this.db = db;
+    this.checker = checker;
   }
 
   @Override
@@ -47,33 +50,34 @@ public class PlanCheckerMongoDatabase implements MongoDatabase {
 
   @Override
   public MongoDatabase withCodecRegistry(CodecRegistry codecRegistry) {
-    return new PlanCheckerMongoDatabase(db.withCodecRegistry(codecRegistry));
+    return new PlanCheckerMongoDatabase(db.withCodecRegistry(codecRegistry), checker);
   }
 
   @Override
   public MongoDatabase withReadPreference(ReadPreference readPreference) {
-    return new PlanCheckerMongoDatabase(db.withReadPreference(readPreference));
+    return new PlanCheckerMongoDatabase(db.withReadPreference(readPreference), checker);
   }
 
   @Override
   public MongoDatabase withWriteConcern(WriteConcern writeConcern) {
-    return new PlanCheckerMongoDatabase(db.withWriteConcern(writeConcern));
+    return new PlanCheckerMongoDatabase(db.withWriteConcern(writeConcern), checker);
   }
 
   @Override
   public MongoDatabase withReadConcern(ReadConcern readConcern) {
-    return new PlanCheckerMongoDatabase(db.withReadConcern(readConcern));
+    return new PlanCheckerMongoDatabase(db.withReadConcern(readConcern), checker);
   }
 
   @Override
   public PlanCheckerMongoCollection<Document> getCollection(String collectionName) {
-    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName));
+    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName), checker);
   }
 
   @Override
   public <TDocument> MongoCollection<TDocument> getCollection(
       String collectionName, Class<TDocument> tDocumentClass) {
-    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName, tDocumentClass));
+    return new PlanCheckerMongoCollection<>(
+        db.getCollection(collectionName, tDocumentClass), checker);
   }
 
   @Override

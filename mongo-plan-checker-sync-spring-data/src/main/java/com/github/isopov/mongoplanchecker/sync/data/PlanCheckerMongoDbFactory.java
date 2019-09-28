@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.sync.data;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.github.isopov.mongoplanchecker.sync.PlanCheckerMongoDatabase;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.DB;
@@ -11,19 +12,21 @@ import org.springframework.data.mongodb.MongoDbFactory;
 
 public class PlanCheckerMongoDbFactory implements MongoDbFactory {
   private final MongoDbFactory f;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoDbFactory(MongoDbFactory f) {
+  public PlanCheckerMongoDbFactory(MongoDbFactory f, PlanChecker checker) {
     this.f = f;
+    this.checker = checker;
   }
 
   @Override
   public MongoDatabase getDb() throws DataAccessException {
-    return new PlanCheckerMongoDatabase(f.getDb());
+    return new PlanCheckerMongoDatabase(f.getDb(), checker);
   }
 
   @Override
   public MongoDatabase getDb(String dbName) throws DataAccessException {
-    return new PlanCheckerMongoDatabase(f.getDb(dbName));
+    return new PlanCheckerMongoDatabase(f.getDb(dbName), checker);
   }
 
   @Override
@@ -44,6 +47,6 @@ public class PlanCheckerMongoDbFactory implements MongoDbFactory {
 
   @Override
   public MongoDbFactory withSession(ClientSession session) {
-    return new PlanCheckerMongoDbFactory(f.withSession(session));
+    return new PlanCheckerMongoDbFactory(f.withSession(session), checker);
   }
 }

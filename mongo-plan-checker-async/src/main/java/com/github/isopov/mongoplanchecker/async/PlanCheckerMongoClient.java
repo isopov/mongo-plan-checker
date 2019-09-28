@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.async;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.*;
@@ -11,9 +12,11 @@ import org.bson.conversions.Bson;
 public class PlanCheckerMongoClient implements MongoClient {
 
   private final MongoClient client;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoClient(MongoClient client) {
+  public PlanCheckerMongoClient(MongoClient client, PlanChecker checker) {
     this.client = client;
+    this.checker = checker;
   }
 
   @Override
@@ -29,7 +32,7 @@ public class PlanCheckerMongoClient implements MongoClient {
 
   @Override
   public PlanCheckerMongoDatabase getDatabase(String name) {
-    return new PlanCheckerMongoDatabase(client.getDatabase(name));
+    return new PlanCheckerMongoDatabase(client.getDatabase(name), checker);
   }
 
   @Override

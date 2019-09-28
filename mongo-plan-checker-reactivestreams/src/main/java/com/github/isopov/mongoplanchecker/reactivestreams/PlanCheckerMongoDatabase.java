@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.reactivestreams;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
@@ -14,9 +15,11 @@ import org.reactivestreams.Publisher;
 
 public class PlanCheckerMongoDatabase implements MongoDatabase {
   private final MongoDatabase db;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoDatabase(MongoDatabase db) {
+  public PlanCheckerMongoDatabase(MongoDatabase db, PlanChecker checker) {
     this.db = db;
+    this.checker = checker;
   }
 
   @Override
@@ -70,13 +73,13 @@ public class PlanCheckerMongoDatabase implements MongoDatabase {
 
   @Override
   public PlanCheckerMongoCollection<Document> getCollection(String collectionName) {
-    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName));
+    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName), checker);
   }
 
   @Override
   public <TDocument> MongoCollection<TDocument> getCollection(
       String collectionName, Class<TDocument> clazz) {
-    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName, clazz));
+    return new PlanCheckerMongoCollection<>(db.getCollection(collectionName, clazz), checker);
   }
 
   @Override

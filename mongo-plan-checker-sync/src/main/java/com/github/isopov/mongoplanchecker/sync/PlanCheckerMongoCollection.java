@@ -24,9 +24,11 @@ import org.bson.conversions.Bson;
 public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TDocument> {
 
   private final MongoCollection<TDocument> collection;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoCollection(MongoCollection<TDocument> collection) {
+  public PlanCheckerMongoCollection(MongoCollection<TDocument> collection, PlanChecker checker) {
     this.collection = collection;
+    this.checker = checker;
   }
 
   private void check(Bson filter) {
@@ -54,7 +56,7 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
                 .collation(collation)
                 .modifiers(new Document("$explain", true))
                 .first();
-    Violations violations = PlanChecker.getViolations(plan);
+    Violations violations = checker.getViolations(plan);
     if (violations.any()) {
       throw new BadPlanException(plan, violations);
     }
@@ -90,7 +92,7 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
                 .collation(collation)
                 .modifiers(new Document("$explain", true))
                 .first();
-    Violations violations = PlanChecker.getViolations(plan);
+    Violations violations = checker.getViolations(plan);
     if (violations.any()) {
       throw new BadPlanException(plan, violations);
     }
@@ -98,13 +100,14 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
 
   @Override
   public <TResult> PlanCheckerFindIterable<TResult> find(Bson filter, Class<TResult> tResultClass) {
-    return new PlanCheckerFindIterable<>(collection.find(filter, tResultClass));
+    return new PlanCheckerFindIterable<>(collection.find(filter, tResultClass), checker);
   }
 
   @Override
   public <TResult> PlanCheckerFindIterable<TResult> find(
       ClientSession clientSession, Bson filter, Class<TResult> tResultClass) {
-    return new PlanCheckerFindIterable<>(collection.find(clientSession, filter, tResultClass));
+    return new PlanCheckerFindIterable<>(
+        collection.find(clientSession, filter, tResultClass), checker);
   }
 
   @Override
@@ -147,27 +150,27 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
   @Override
   public <NewTDocument> PlanCheckerMongoCollection<NewTDocument> withDocumentClass(
       Class<NewTDocument> clazz) {
-    return new PlanCheckerMongoCollection<>(collection.withDocumentClass(clazz));
+    return new PlanCheckerMongoCollection<>(collection.withDocumentClass(clazz), checker);
   }
 
   @Override
   public PlanCheckerMongoCollection<TDocument> withCodecRegistry(CodecRegistry codecRegistry) {
-    return new PlanCheckerMongoCollection<>(collection.withCodecRegistry(codecRegistry));
+    return new PlanCheckerMongoCollection<>(collection.withCodecRegistry(codecRegistry), checker);
   }
 
   @Override
   public PlanCheckerMongoCollection<TDocument> withReadPreference(ReadPreference readPreference) {
-    return new PlanCheckerMongoCollection<>(collection.withReadPreference(readPreference));
+    return new PlanCheckerMongoCollection<>(collection.withReadPreference(readPreference), checker);
   }
 
   @Override
   public PlanCheckerMongoCollection<TDocument> withWriteConcern(WriteConcern writeConcern) {
-    return new PlanCheckerMongoCollection<>(collection.withWriteConcern(writeConcern));
+    return new PlanCheckerMongoCollection<>(collection.withWriteConcern(writeConcern), checker);
   }
 
   @Override
   public PlanCheckerMongoCollection<TDocument> withReadConcern(ReadConcern readConcern) {
-    return new PlanCheckerMongoCollection<>(collection.withReadConcern(readConcern));
+    return new PlanCheckerMongoCollection<>(collection.withReadConcern(readConcern), checker);
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.github.isopov.mongoplanchecker.reactivestreams;
 
 import static com.github.isopov.mongoplanchecker.core.PlanChecker.explainModifier;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.CursorType;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.FindPublisher;
@@ -12,11 +13,13 @@ import org.reactivestreams.Subscriber;
 
 public class PlanCheckerFindPublisher<TResult> implements FindPublisher<TResult> {
   private final FindPublisher<TResult> p;
+  private final PlanChecker checker;
   private Bson modifiers;
   private int skip;
 
-  public PlanCheckerFindPublisher(FindPublisher<TResult> p) {
+  public PlanCheckerFindPublisher(FindPublisher<TResult> p, PlanChecker checker) {
     this.p = p;
+    this.checker = checker;
   }
 
   @Override
@@ -29,6 +32,7 @@ public class PlanCheckerFindPublisher<TResult> implements FindPublisher<TResult>
                 new PlanCheckingSubscriber<>(
                     mainSubscriber,
                     skip,
+                    checker,
                     () -> p.modifiers(modifiers).first().subscribe(mainSubscriber)));
   }
 
@@ -39,7 +43,10 @@ public class PlanCheckerFindPublisher<TResult> implements FindPublisher<TResult>
         .first()
         .subscribe(
             new PlanCheckingSubscriber<>(
-                mainSubscriber, skip, () -> p.modifiers(modifiers).subscribe(mainSubscriber)));
+                mainSubscriber,
+                skip,
+                checker,
+                () -> p.modifiers(modifiers).subscribe(mainSubscriber)));
   }
 
   @Override

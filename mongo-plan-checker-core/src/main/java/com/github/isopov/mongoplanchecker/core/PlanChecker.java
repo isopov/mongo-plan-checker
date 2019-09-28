@@ -1,20 +1,49 @@
 package com.github.isopov.mongoplanchecker.core;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-public class PlanChecker {
+public final class PlanChecker {
 
   public static Bson explainModifier() {
     return new Document("$explain", true);
   }
 
-  public static Violations getViolations(Document plan) {
+  private final AtomicInteger broadcastsToIgnore = new AtomicInteger();
+  private final AtomicInteger collscansToIgnore = new AtomicInteger();
+  private final AtomicInteger excessReadsToIgnore = new AtomicInteger();
+  private final AtomicInteger sortsToIgnore = new AtomicInteger();
+
+  public Violations getViolations(Document plan) {
     return getViolations(plan, 0);
   }
 
-  public static Violations getViolations(Document plan, int skip) {
+  public void ignoreBroadcast() {
+    broadcastsToIgnore.incrementAndGet();
+  }
+
+  public void ignoreCollscan() {
+    collscansToIgnore.incrementAndGet();
+  }
+
+  public void ignoreExcessRead() {
+    excessReadsToIgnore.incrementAndGet();
+  }
+
+  public void ignoreSort() {
+    sortsToIgnore.incrementAndGet();
+  }
+
+  public boolean anyIgnores() {
+    return broadcastsToIgnore.get() > 0
+        || collscansToIgnore.get() > 0
+        || excessReadsToIgnore.get() > 0
+        || sortsToIgnore.get() > 0;
+  }
+
+  public Violations getViolations(Document plan, int skip) {
     Document queryPlanner = (Document) plan.get("queryPlanner");
     if (queryPlanner == null) {
       throw new NotExplainException(plan);
@@ -22,6 +51,38 @@ public class PlanChecker {
     Violations.Builder resultBuilder = new Violations.Builder();
     checkExcessRead((Document) plan.get("executionStats"), skip, resultBuilder);
     traverseStage((Document) queryPlanner.get("winningPlan"), resultBuilder);
+
+    if (resultBuilder.broadcast && broadcastsToIgnore.get() > 0) {
+      if (broadcastsToIgnore.decrementAndGet() >= 0) {
+        resultBuilder.broadcast = false;
+      } else {
+        broadcastsToIgnore.incrementAndGet();
+      }
+    }
+
+    if (resultBuilder.excessRead && excessReadsToIgnore.get() > 0) {
+      if (excessReadsToIgnore.decrementAndGet() >= 0) {
+        resultBuilder.excessRead = false;
+      } else {
+        excessReadsToIgnore.incrementAndGet();
+      }
+    }
+
+    if (resultBuilder.collscans > 0 && collscansToIgnore.get() >= resultBuilder.collscans) {
+      if (collscansToIgnore.addAndGet(-resultBuilder.collscans) >= 0) {
+        resultBuilder.collscans = 0;
+      } else {
+        collscansToIgnore.addAndGet(resultBuilder.collscans);
+      }
+    }
+
+    if (resultBuilder.sorts > 0 && sortsToIgnore.get() >= resultBuilder.sorts) {
+      if (sortsToIgnore.addAndGet(-resultBuilder.sorts) >= 0) {
+        resultBuilder.sorts = 0;
+      } else {
+        sortsToIgnore.addAndGet(resultBuilder.sorts);
+      }
+    }
 
     return resultBuilder.build();
   }

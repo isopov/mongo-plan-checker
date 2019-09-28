@@ -22,11 +22,13 @@ import org.bson.conversions.Bson;
 @SuppressWarnings("deprecation")
 public class PlanCheckerFindIterable<TDocument> implements FindIterable<TDocument> {
   private final FindIterable<TDocument> it;
+  private final PlanChecker checker;
   private Bson modifiers;
   private int skip;
 
-  public PlanCheckerFindIterable(FindIterable<TDocument> it) {
+  public PlanCheckerFindIterable(FindIterable<TDocument> it, PlanChecker checker) {
     this.it = it;
+    this.checker = checker;
   }
 
   @Override
@@ -59,7 +61,7 @@ public class PlanCheckerFindIterable<TDocument> implements FindIterable<TDocumen
                 callback.onResult(null, t);
               } else {
                 Document plan = (Document) result;
-                Violations violations = PlanChecker.getViolations(plan, skip);
+                Violations violations = checker.getViolations(plan, skip);
                 if (violations.any()) {
                   callback.onResult(null, new BadPlanException(plan, violations));
                 } else {

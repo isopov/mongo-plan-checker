@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.reactivestreams;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.reactivestreams.client.*;
@@ -11,14 +12,16 @@ import org.reactivestreams.Publisher;
 public class PlanCheckerMongoClient implements MongoClient {
 
   private final MongoClient client;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoClient(MongoClient client) {
+  public PlanCheckerMongoClient(MongoClient client, PlanChecker checker) {
     this.client = client;
+    this.checker = checker;
   }
 
   @Override
   public PlanCheckerMongoDatabase getDatabase(String s) {
-    return new PlanCheckerMongoDatabase(client.getDatabase(s));
+    return new PlanCheckerMongoDatabase(client.getDatabase(s), checker);
   }
 
   @Override

@@ -18,11 +18,13 @@ import org.bson.conversions.Bson;
 public class PlanCheckerFindIterable<TResult> implements FindIterable<TResult> {
 
   private final FindIterable<TResult> iterable;
+  private final PlanChecker checker;
   private Bson modifiers;
   private int skip;
 
-  public PlanCheckerFindIterable(FindIterable<TResult> iterable) {
+  public PlanCheckerFindIterable(FindIterable<TResult> iterable, PlanChecker checker) {
     this.iterable = iterable;
+    this.checker = checker;
   }
 
   @Override
@@ -47,7 +49,7 @@ public class PlanCheckerFindIterable<TResult> implements FindIterable<TResult> {
   @SuppressWarnings("deprecation")
   private void check() {
     Document plan = (Document) iterable.modifiers(new Document("$explain", true)).first();
-    Violations violations = PlanChecker.getViolations(plan, skip);
+    Violations violations = checker.getViolations(plan, skip);
     if (violations.any()) {
       throw new BadPlanException(plan, violations);
     }

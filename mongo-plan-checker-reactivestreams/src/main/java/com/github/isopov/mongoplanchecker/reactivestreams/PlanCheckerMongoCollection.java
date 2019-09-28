@@ -3,6 +3,7 @@ package com.github.isopov.mongoplanchecker.reactivestreams;
 import static com.github.isopov.mongoplanchecker.core.PlanChecker.explainModifier;
 
 import com.github.isopov.mongoplanchecker.core.Nullable;
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
@@ -21,9 +22,11 @@ import org.reactivestreams.Publisher;
 
 public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TDocument> {
   private final MongoCollection<TDocument> c;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoCollection(MongoCollection<TDocument> c) {
+  public PlanCheckerMongoCollection(MongoCollection<TDocument> c, PlanChecker checker) {
     this.c = c;
+    this.checker = checker;
   }
 
   @Override
@@ -58,27 +61,27 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
 
   @Override
   public <NewTDocument> MongoCollection<NewTDocument> withDocumentClass(Class<NewTDocument> clazz) {
-    return new PlanCheckerMongoCollection<>(c.withDocumentClass(clazz));
+    return new PlanCheckerMongoCollection<>(c.withDocumentClass(clazz), checker);
   }
 
   @Override
   public MongoCollection<TDocument> withCodecRegistry(CodecRegistry codecRegistry) {
-    return new PlanCheckerMongoCollection<>(c.withCodecRegistry(codecRegistry));
+    return new PlanCheckerMongoCollection<>(c.withCodecRegistry(codecRegistry), checker);
   }
 
   @Override
   public MongoCollection<TDocument> withReadPreference(ReadPreference readPreference) {
-    return new PlanCheckerMongoCollection<>(c.withReadPreference(readPreference));
+    return new PlanCheckerMongoCollection<>(c.withReadPreference(readPreference), checker);
   }
 
   @Override
   public MongoCollection<TDocument> withWriteConcern(WriteConcern writeConcern) {
-    return new PlanCheckerMongoCollection<>(c.withWriteConcern(writeConcern));
+    return new PlanCheckerMongoCollection<>(c.withWriteConcern(writeConcern), checker);
   }
 
   @Override
   public MongoCollection<TDocument> withReadConcern(ReadConcern readConcern) {
-    return new PlanCheckerMongoCollection<>(c.withReadConcern(readConcern));
+    return new PlanCheckerMongoCollection<>(c.withReadConcern(readConcern), checker);
   }
 
   @Override
@@ -114,7 +117,7 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
             .first()
             .subscribe(
                 new PlanCheckingSubscriber<>(
-                    mainSubscriber, () -> realPublisher.get().subscribe(mainSubscriber)));
+                    mainSubscriber, checker, () -> realPublisher.get().subscribe(mainSubscriber)));
   }
 
   private <T> Publisher<T> check(
@@ -149,7 +152,7 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
             .first()
             .subscribe(
                 new PlanCheckingSubscriber<>(
-                    mainSubscriber, () -> realPublisher.get().subscribe(mainSubscriber)));
+                    mainSubscriber, checker, () -> realPublisher.get().subscribe(mainSubscriber)));
   }
 
   @Override
@@ -260,44 +263,44 @@ public class PlanCheckerMongoCollection<TDocument> implements MongoCollection<TD
 
   @Override
   public FindPublisher<TDocument> find() {
-    return new PlanCheckerFindPublisher<>(c.find());
+    return new PlanCheckerFindPublisher<>(c.find(), checker);
   }
 
   @Override
   public <TResult> PlanCheckerFindPublisher<TResult> find(Class<TResult> clazz) {
-    return new PlanCheckerFindPublisher<>(c.find(clazz));
+    return new PlanCheckerFindPublisher<>(c.find(clazz), checker);
   }
 
   @Override
   public PlanCheckerFindPublisher<TDocument> find(Bson filter) {
-    return new PlanCheckerFindPublisher<>(c.find(filter));
+    return new PlanCheckerFindPublisher<>(c.find(filter), checker);
   }
 
   @Override
   public <TResult> PlanCheckerFindPublisher<TResult> find(Bson filter, Class<TResult> clazz) {
-    return new PlanCheckerFindPublisher<>(c.find(filter, clazz));
+    return new PlanCheckerFindPublisher<>(c.find(filter, clazz), checker);
   }
 
   @Override
   public PlanCheckerFindPublisher<TDocument> find(ClientSession clientSession) {
-    return new PlanCheckerFindPublisher<>(c.find(clientSession));
+    return new PlanCheckerFindPublisher<>(c.find(clientSession), checker);
   }
 
   @Override
   public <TResult> PlanCheckerFindPublisher<TResult> find(
       ClientSession clientSession, Class<TResult> clazz) {
-    return new PlanCheckerFindPublisher<>(c.find(clientSession, clazz));
+    return new PlanCheckerFindPublisher<>(c.find(clientSession, clazz), checker);
   }
 
   @Override
   public PlanCheckerFindPublisher<TDocument> find(ClientSession clientSession, Bson filter) {
-    return new PlanCheckerFindPublisher<>(c.find(clientSession, filter));
+    return new PlanCheckerFindPublisher<>(c.find(clientSession, filter), checker);
   }
 
   @Override
   public <TResult> PlanCheckerFindPublisher<TResult> find(
       ClientSession clientSession, Bson filter, Class<TResult> clazz) {
-    return new PlanCheckerFindPublisher<>(c.find(clientSession, filter, clazz));
+    return new PlanCheckerFindPublisher<>(c.find(clientSession, filter, clazz), checker);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.github.isopov.mongoplanchecker.sync;
 
+import com.github.isopov.mongoplanchecker.core.PlanChecker;
 import com.mongodb.ClientSessionOptions;
 import com.mongodb.client.*;
 import java.util.List;
@@ -8,14 +9,16 @@ import org.bson.conversions.Bson;
 
 public final class PlanCheckerMongoClient implements MongoClient {
   private final MongoClient client;
+  private final PlanChecker checker;
 
-  public PlanCheckerMongoClient(MongoClient client) {
+  public PlanCheckerMongoClient(MongoClient client, PlanChecker checker) {
     this.client = client;
+    this.checker = checker;
   }
 
   @Override
   public MongoDatabase getDatabase(String databaseName) {
-    return new PlanCheckerMongoDatabase(client.getDatabase(databaseName));
+    return new PlanCheckerMongoDatabase(client.getDatabase(databaseName), checker);
   }
 
   @Override

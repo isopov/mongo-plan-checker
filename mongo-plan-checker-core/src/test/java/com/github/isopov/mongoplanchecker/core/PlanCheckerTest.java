@@ -1,18 +1,19 @@
 package com.github.isopov.mongoplanchecker.core;
 
-import static com.github.isopov.mongoplanchecker.core.PlanChecker.getViolations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
 class PlanCheckerTest {
+  private final PlanChecker checker = new PlanChecker();
+
   private static final String IDHACK =
       "{\"queryPlanner\": {\"plannerVersion\": 1, \"namespace\": \"test.testCollection\", \"indexFilterSet\": false, \"parsedQuery\": {\"_id\": {\"$eq\": \"foo\"}}, \"queryHash\": \"A300CFDE\", \"planCacheKey\": \"A2B33459\", \"winningPlan\": {\"stage\": \"IDHACK\"}, \"rejectedPlans\": []}, \"executionStats\": {\"executionSuccess\": true, \"nReturned\": 0, \"executionTimeMillis\": 0, \"totalKeysExamined\": 0, \"totalDocsExamined\": 0, \"executionStages\": {\"stage\": \"IDHACK\", \"nReturned\": 0, \"executionTimeMillisEstimate\": 0, \"works\": 1, \"advanced\": 0, \"needTime\": 0, \"needYield\": 0, \"saveState\": 0, \"restoreState\": 0, \"isEOF\": 1, \"keysExamined\": 0, \"docsExamined\": 0}, \"allPlansExecution\": []}, \"serverInfo\": {\"host\": \"f2f3a0c77a2e\", \"port\": 27017, \"version\": \"4.1.13\", \"gitVersion\": \"441714bc4c70699950f3ac51a5cac41dcd413eaa\"}, \"ok\": 1.0}";
 
   @Test
   void testIdHack() {
-    assertEquals(new Violations(false, false, 0, 0), getViolations(Document.parse(IDHACK)));
+    assertEquals(new Violations(false, false, 0, 0), checker.getViolations(Document.parse(IDHACK)));
   }
 
   private static final String COLLSCAN_LIMIT1 =
@@ -21,7 +22,7 @@ class PlanCheckerTest {
   @Test
   void testCollScanLimit1() {
     assertEquals(
-        new Violations(false, false, 1, 0), getViolations(Document.parse(COLLSCAN_LIMIT1)));
+        new Violations(false, false, 1, 0), checker.getViolations(Document.parse(COLLSCAN_LIMIT1)));
   }
 
   private static final String COLLSCAN =
@@ -29,7 +30,8 @@ class PlanCheckerTest {
 
   @Test
   void testCollScan() {
-    assertEquals(new Violations(false, false, 1, 0), getViolations(Document.parse(COLLSCAN)));
+    assertEquals(
+        new Violations(false, false, 1, 0), checker.getViolations(Document.parse(COLLSCAN)));
   }
 
   private static final String COLLSCAN_SORT =
@@ -37,7 +39,8 @@ class PlanCheckerTest {
 
   @Test
   void testCollScanSort() {
-    assertEquals(new Violations(false, false, 1, 1), getViolations(Document.parse(COLLSCAN_SORT)));
+    assertEquals(
+        new Violations(false, false, 1, 1), checker.getViolations(Document.parse(COLLSCAN_SORT)));
   }
 
   private static final String IXSCAN_SORT =
@@ -45,7 +48,8 @@ class PlanCheckerTest {
 
   @Test
   void testIxScanSort() {
-    assertEquals(new Violations(false, false, 0, 1), getViolations(Document.parse(IXSCAN_SORT)));
+    assertEquals(
+        new Violations(false, false, 0, 1), checker.getViolations(Document.parse(IXSCAN_SORT)));
   }
 
   private static final String EXCESSREAD =
@@ -53,7 +57,8 @@ class PlanCheckerTest {
 
   @Test
   void testExcessRead() {
-    assertEquals(new Violations(false, true, 0, 0), getViolations(Document.parse(EXCESSREAD)));
+    assertEquals(
+        new Violations(false, true, 0, 0), checker.getViolations(Document.parse(EXCESSREAD)));
   }
 
   private static final String BROADCAST_EXCESSREAD_COLLSCAN =
@@ -63,6 +68,6 @@ class PlanCheckerTest {
   void testBroadcastExcessReadCollScan() {
     assertEquals(
         new Violations(true, true, 1, 0),
-        getViolations(Document.parse(BROADCAST_EXCESSREAD_COLLSCAN)));
+        checker.getViolations(Document.parse(BROADCAST_EXCESSREAD_COLLSCAN)));
   }
 }
