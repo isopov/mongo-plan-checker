@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/isopov/mongo-plan-checker.svg?branch=master)](https://travis-ci.com/isopov/mongo-plan-checker)
+[![Github Actions Status](https://github.com/isopov/mongo-plan-checker/workflows/CI/badge.svg)](https://github.com/isopov/mongo-plan-checker/actions)
 
 WIP
 # Building
